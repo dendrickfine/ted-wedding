@@ -1,20 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import Swal from 'sweetalert2'
 
 export default function HomePage() {
   const [name, setName] = useState('')
-  const [guests, setGuests] = useState([])
-
-  const fetchGuests = async () => {
-    const { data, error } = await supabase.from('guests').select('*').order('created_at', { ascending: false })
-    if (!error) setGuests(data)
-  }
-
-  useEffect(() => {
-    fetchGuests()
-  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -23,36 +14,43 @@ export default function HomePage() {
     const { error } = await supabase.from('guests').insert([{ name, is_attending: true }])
     if (!error) {
       setName('')
-      fetchGuests()
+      Swal.fire({
+        icon: 'success',
+        title: 'Terima kasih!',
+        text: 'Konfirmasi Anda telah diterima. Sampai jumpa di hari bahagia kami!',
+        confirmButtonColor: '#ec4899',
+      })
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops!',
+        text: 'Gagal menyimpan konfirmasi. Silakan coba lagi.',
+        confirmButtonColor: '#ef4444',
+      })
     }
   }
 
   return (
-    <main className="max-w-xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-4">Undangan Pernikahan</h1>
-      <p className="text-center mb-6">Silakan isi nama Anda untuk konfirmasi kehadiran.</p>
+    <main className="min-h-screen flex items-center justify-center p-4">
+      <div className="bg-white shadow-xl rounded-2xl p-8 max-w-md w-full text-center border border-pink-100">
+        <h1 className="text-4xl font-bold mb-4 text-pink-600">Undangan Pernikahan</h1>
+        <p className="mb-6">Dengan penuh sukacita kami mengundang Anda untuk hadir di hari bahagia kami.</p>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="flex-1 border border-gray-300 px-4 py-2 rounded"
-          placeholder="Nama Anda"
-        />
-        <button
-          type="submit"
-          className="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600"
-        >
-          Konfirmasi
-        </button>
-      </form>
-
-      <h2 className="text-xl font-semibold mb-2">Daftar Tamu Hadir:</h2>
-      <ul className="list-disc list-inside">
-        {guests.map((guest) => (
-          <li key={guest.id}>{guest.name}</li>
-        ))}
-      </ul>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-pink-300"
+            placeholder="Nama Anda"
+          />
+          <button
+            type="submit"
+            className="w-full bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600 transition"
+          >
+            Konfirmasi Kehadiran
+          </button>
+        </form>
+      </div>
     </main>
   )
 }
